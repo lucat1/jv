@@ -3,17 +3,25 @@
 #include <stddef.h>
 #include <getopt.h>
 #include <string.h>
+#include <time.h>
 
 #include <json-c/json.h>
+
+const char *LINE = " %-14s ┃ %-5s ┃ %s\n";
 
 int strict = 0;
 
 // used to handle errors outputted by the `handle` function
 int line_count = 0;
-int error = 0;
-char *message = NULL;
+char message[256];
 
-void handle(char *line, size_t size) {
+json_object *get(json_object *obj, char *key) {
+  json_object *value;
+  json_object_object_get_ex(obj, key, &value);
+  return value;
+}
+
+int handle(char *line, size_t size) {
   enum json_tokener_error error;
   json_object *root = json_tokener_parse_verbose(line, &error);
 
@@ -26,23 +34,30 @@ void handle(char *line, size_t size) {
     default:
       if(strict) {
         // in strict mode we fail if the json is invalid
-        error = 1;
         snprintf(
           message,
-          strlen(message),
-          "Fatal: invalid JSON at line %i",
+          sizeof message,
+          "invalid JSON at line: %i",
           line_count
-        ); 
+          ); 
+        return 1;
       } else {
-        printf("RAW: %s", line);
+        printf(LINE, "", "raw", line);
+        return 0;
       }
-      return;
   }
-  
-  // key and val don't exist outside of this bloc
-  json_object_object_foreach(root, key, val) {
-    printf("key: %s\nval: %s\n", key, json_object_get_string(val));
-  }
+
+  // we assume that "time" and "level" are available in each line
+  json_object *raw_time = get(root, "time");
+  time_t time = (time_t) json_object_get_int64(raw_time);
+  char time_str[32];
+  strftime(time_str, sizeof(time_str), "%D %R", localtime(&time));
+
+  json_object *raw_level = get(root, "level");
+  const char *level = json_object_get_string(raw_level);
+
+  printf(LINE, time_str, level, "");
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -64,10 +79,8 @@ int main(int argc, char *argv[]) {
 
   while((getline(&line, &size, stdin)) >= 0) {
     line_count++;
-    handle(line, size);
-
-    if(error) {
-      fprintf(stderr, message);
+    if(handle(line, size)) {
+      fprintf(stderr, "Fatal: %s\n", message);
       break;
     }
   }
