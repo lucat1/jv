@@ -52,7 +52,7 @@ int handle(char *line, size_t size) {
 
   json_object *raw_level = get(root, "level");
   char *color = LIGHT_BLACK_TEXT; 
-  char *level = json_object_get_string(raw_level);
+  char *level = (char *) json_object_get_string(raw_level);
 
   // convert the `level` to lowercase
   for(int i = 0; level[i]; i++) {
