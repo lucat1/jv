@@ -3,65 +3,58 @@
 #include <stddef.h>
 #include <getopt.h>
 #include <string.h>
-#include "jsmn.h"
 
-int verbose = 0;
+#include <json-c/json.h>
+
+int strict = 0;
 
 // used to handle errors outputted by the `handle` function
+int line_count = 0;
 int error = 0;
 char *message = NULL;
 
-void handle(jsmn_parser *p, char *line, size_t size) {
-  jsmntok_t t[256]; // tokens
-  int r = jsmn_parse(p, line, size, t, sizeof(t) / sizeof(t[0]));
+void handle(char *line, size_t size) {
+  enum json_tokener_error error;
+  json_object *root = json_tokener_parse_verbose(line, &error);
 
-  if(r < 0) {
-    switch(r) {
-      case JSMN_ERROR_INVAL:
-      case JSMN_ERROR_PART:
-        // the string is clearly valid, so we print is as raw
-        // but ONLY when the mode is `verbose`
-        if (verbose) {
-          printf("RAW: %s", line);
-        }
-        return;
-      default:
-        // otherwise we return with an error and quit the program
+  switch(error) {
+    case json_tokener_success:
+    case json_tokener_continue:
+      // don't stop. These are file status codes
+      break;
+
+    default:
+      if(strict) {
+        // in strict mode we fail if the json is invalid
         error = 1;
-        message = "Fatal: JSON line is too long\n";
-        return;
+        snprintf(
+          message,
+          strlen(message),
+          "Fatal: invalid JSON at line %i",
+          line_count
+        ); 
+      } else {
+        printf("RAW: %s", line);
       }
+      return;
   }
-
-  if(t[0].type != JSMN_OBJECT) {
-    printf("%i\n",t[0].type);
-    error = 1;
-    message = "Fatal: only JSON objects are accepted\n";
-    return;
-  }
-
-  // iterate over all the fields of the log object
-  for(int i = 1; i < r; i++) {
-
-    if(t[i].type == JSMN_STRING) {
-      int size = t[i].end - t[i].start;
-      char *substr[size];
-      memcpy(substr, &line[t[i].start], size);
-      printf("string: %s\n", substr);
-    }
+  
+  // key and val don't exist outside of this bloc
+  json_object_object_foreach(root, key, val) {
+    printf("key: %s\nval: %s\n", key, json_object_get_string(val));
   }
 }
 
 int main(int argc, char *argv[]) {
   char c;
-  while((c = getopt(argc, argv, "hv")) != -1) {
+  while((c = getopt(argc, argv, "hs")) != -1) {
     switch(c) {
       case 'h':
         fprintf(stdout, "usage: jv [-h] [-v]\n");
         exit(0);
         break;
-      case 'v':
-        verbose = 1;
+      case 's':
+        strict = 1;
         break;
     }
   }
@@ -69,11 +62,9 @@ int main(int argc, char *argv[]) {
   char *line = NULL;
   size_t size = 0;
 
-  jsmn_parser p; // parser
-  jsmn_init(&p); // initialize the parser only once
-
   while((getline(&line, &size, stdin)) >= 0) {
-    handle(&p, line, size);
+    line_count++;
+    handle(line, size);
 
     if(error) {
       fprintf(stderr, message);

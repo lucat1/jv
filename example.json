@@ -5,3 +5,4 @@
 {"level":"debug","method":"GET","url":"/undefined","duration":1,"time":1592042710,"message":"Handled request"}
 {"level":"debug","method":"GET","url":"/favicon.ico","duration":0,"time":1592042711,"message":"Handled request"}
 {"level":"debug","method":"GET","url":"/","duration":2,"time":1592042769,"message":"Handled request"}
+non-json line
