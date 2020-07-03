@@ -39,7 +39,6 @@ char *realloc_extra(char *extra, int new_len) {
   char *new_extra = realloc(extra, new_len);
   if(new_extra == NULL) {
     snprintf(message, sizeof message, "could not get memory for extra line");
-    free(extra);
     return NULL;
   }
 
@@ -100,10 +99,9 @@ int handle(char *line, size_t size) {
 
   // with the other parameters we create an extra string
   // to be printed in the next line 
-  int extra_initial_len = strlen(LIGHT_BLACK_TEXT) + 1;
-  int extra_len = extra_initial_len;
-  char *extra = malloc(extra_len);
-  strcpy(extra, LIGHT_BLACK_TEXT);
+  char *extra = strdup(LIGHT_BLACK_TEXT);
+  int extra_initial_len, extra_len;
+  extra_initial_len = extra_len = strlen(extra) + 1;
 
   json_object_object_foreach(root, key, raw_value) {
     if(strcmp(key, "time") == 0 ||
@@ -123,7 +121,6 @@ int handle(char *line, size_t size) {
     int new_len = (extra_len + len);
     char *new_extra = realloc_extra(extra, new_len); 
     if(new_extra == NULL) {
-      free(pair);
       return 1;
     }
 
@@ -138,7 +135,6 @@ int handle(char *line, size_t size) {
   if(have_extra) {
     if(!(msg = malloc((len + 2)))) {
       snprintf(message, sizeof message, "could not get memory for log message");
-      free(extra);
       return 1;
     }
 
@@ -151,7 +147,7 @@ int handle(char *line, size_t size) {
   printf(LINE, time_str, color, level, msg, extra);
 
   // if the msg buffer was allocated we must free it afterwards
-  if (msg) {
+  if (have_extra) {
     free(msg);
   }
   free(extra);
