@@ -10,7 +10,7 @@ jv requires the following software to be installed:
 
 Please make sure to install the corresponding development packages in
 case that you want to build jc on a distribution with separate
-runtime and development packages (e.g. _-dev on Debian, _-devel on
+runtime and development packages (e.g. \*-dev on Debian, \*-devel on
 Void).
 
 # Building
