@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
   while((c = getopt(argc, argv, "hs")) != -1) {
     switch(c) {
       case 'h':
-        fprintf(stdout, "usage: jv [-h] [-v]\n");
+        fprintf(stdout, "usage: jv [-h] [-s]\n");
         exit(0);
         break;
       case 's':
