@@ -12,6 +12,9 @@
 
 #define LINE GREEN_TEXT "%-14s" COLOR_RESET " %s%-5s" COLOR_RESET " %s%s" COLOR_RESET "\n"
 #define EXTRA_FORMAT "%s=%s" COLOR_RESET "; " LIGHT_BLACK_TEXT
+// uncomment to use a tab instead of spaces
+/* #define EXTRA_EMPTY LIGHT_BLACK_TEXT "\t" */
+#define EXTRA_EMPTY LIGHT_BLACK_TEXT "   "
 
 int strict = 0;
 
@@ -99,7 +102,7 @@ int handle(char *line, size_t size) {
 
   // with the other parameters we create an extra string
   // to be printed in the next line 
-  char *extra = strdup(LIGHT_BLACK_TEXT);
+  char *extra = strdup(EXTRA_EMPTY);
   int extra_initial_len, extra_len;
   extra_initial_len = extra_len = strlen(extra) + 1;
 
