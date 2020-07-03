@@ -2,7 +2,9 @@
 
 ![proj](https://user-images.githubusercontent.com/29304787/86464293-79098100-bd2f-11ea-8eb0-c75a1c61abbf.png)
 
-# Dependencies jv requires the following software to be installed:
+# Dependencies
+
+jv requires the following software to be installed:
 
 - json-c
 
@@ -11,7 +13,9 @@ case that you want to build jc on a distribution with separate
 runtime and development packages (e.g. _-dev on Debian, _-devel on
 Void).
 
-# Building jc is built using the commands:
+# Building
+
+jc is built using the commands:
 
 ```
 $ make
@@ -32,6 +36,7 @@ second command to:
 
 A `DESTDIR` option is also supported. It will be appended before the `PREFIX`.
 
-# Usage jv accepts any input from `stdin` in the form or JSON logs or
+# Usage
 
-raw strings and pretty prints them to `stdout`.
+jv accepts any input from `stdin` in the form or JSON logs or raw strings and
+pretty prints them to `stdout`.
